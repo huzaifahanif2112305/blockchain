@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: GPL-3.0
+
+
+
+pragma solidity >=0.8.2 <0.9.0;
+import"@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import"@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
+contract ERC20Auction{
+    struct Listing{
+        address seller;
+        IERC20 token;
+        uint pricePerToken;
+        unint remaingAmount;
+
+
+    }
+    Listing[]public listings;
+
+
+
+
+
+}
