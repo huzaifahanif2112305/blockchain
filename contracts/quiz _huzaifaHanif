@@ -1,23 +1,56 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-
-pragma solidity >=0.8.2 <0.9.0;
-import"@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import"@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
-contract ERC20Auction{
-    struct Listing{
+contract ERC20FixedPriceAuction {
+    struct Listing {
         address seller;
         IERC20 token;
-        uint pricePerToken;
-        unint remaingAmount;
-
-
+        uint256 pricePerToken;
+        uint256 remainingAmount;
     }
-    Listing[]public listings;
 
+    Listing[] public listings;
 
+    
+    function createListing(IERC20 _token, uint256 _amount, uint256 _pricePerToken) external {
+        require(_amount > 0, "Amount must be greater than 0");
+        require(_pricePerToken > 0, "Price must be greater than 0");
 
+        
+        require(_token.transferFrom(msg.sender, address(this), _amount), "Token transfer failed");
 
+        listings.push(Listing({
+            seller: msg.sender,
+            token: _token,
+            pricePerToken: _pricePerToken,
+            remainingAmount: _amount
+        }));
+    }
 
+    
+    function buyTokens(uint256 listingId, uint256 tokenAmount) external payable {
+        Listing storage listing = listings[listingId];
+        require(tokenAmount > 0 && tokenAmount <= listing.remainingAmount, "Invalid token amount");
+
+        uint256 totalCost = listing.pricePerToken * tokenAmount;
+        require(msg.value >= totalCost, "Insufficient ETH sent");
+
+        
+        listing.remainingAmount -= tokenAmount;
+
+        
+        require(listing.token.transfer(msg.sender, tokenAmount), "Token transfer failed");
+        payable(listing.seller).transfer(totalCost);
+
+        
+        if (msg.value > totalCost) {
+            payable(msg.sender).transfer(msg.value - totalCost);
+        }
+    }
+
+    function getListingsCount() external view returns (uint256) {
+        return listings.length;
+    }
 }
