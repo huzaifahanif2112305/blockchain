@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+/// @notice Fixed-supply token on Chain A — no mint() after deployment
+contract TokenA is ERC20 {
+    constructor() ERC20("TokenA", "TKNA") {
+        _mint(msg.sender, 1000000);
+    }
+}
